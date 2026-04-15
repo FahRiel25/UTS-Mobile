@@ -114,14 +114,10 @@ fun GameScreen(gameViewModel: GameViewModel) {
                 )
             }
 
-            // Tombol Add Word yang disesuaikan dengan milik temanmu
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    // 1. Simpan kata dari teks yang sedang diketik
                     gameViewModel.addWord(gameViewModel.userGuess)
-
-                    // 2. Kosongkan kembali kolom teksnya agar lebih rapi (Bonus UX!)
                     gameViewModel.updateUserGuess("")
                 }
             ) {
