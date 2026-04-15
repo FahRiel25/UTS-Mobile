@@ -20,19 +20,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.unscramble.data.MAX_NO_OF_WORDS
 import com.example.unscramble.data.SCORE_INCREASE
+import com.example.unscramble.data.WordDao
+import com.example.unscramble.data.Words
 import com.example.unscramble.data.allWords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel containing the app data and methods to process the data
  */
-class GameViewModel : ViewModel() {
-
+class GameViewModel(private val wordDao: WordDao) : ViewModel() {
     // Game UI state
     private val _uiState = MutableStateFlow(GameUiState())
     val uiState: StateFlow<GameUiState> = _uiState.asStateFlow()
@@ -43,9 +47,14 @@ class GameViewModel : ViewModel() {
     // Set of words used in the game
     private var usedWords: MutableSet<String> = mutableSetOf()
     private lateinit var currentWord: String
+    private var dbWords: Set<String> = emptySet()
+
 
     init {
-        resetGame()
+        viewModelScope.launch {
+            dbWords = wordDao.getAllWords().map { it.word }.toSet()
+            resetGame()
+        }
     }
 
     /*
@@ -92,8 +101,14 @@ class GameViewModel : ViewModel() {
         updateUserGuess("")
     }
 
-    fun addWord() {
-
+    fun addWord(newWord: String) {
+        if (newWord.isNotBlank()) {
+            val formattedWord = newWord.trim().lowercase()
+            viewModelScope.launch {
+                wordDao.insert(Words(word = formattedWord))
+                dbWords = dbWords + formattedWord
+            }
+        }
     }
 
     /*
@@ -135,12 +150,24 @@ class GameViewModel : ViewModel() {
 
     private fun pickRandomWordAndShuffle(): String {
         // Continue picking up a new random word until you get one that hasn't been used before
-        currentWord = allWords.random()
+        val combinedWords = dbWords + allWords
+        if (combinedWords.isEmpty()) return ""
+        currentWord = combinedWords.random()
         return if (usedWords.contains(currentWord)) {
             pickRandomWordAndShuffle()
         } else {
             usedWords.add(currentWord)
             shuffleCurrentWord(currentWord)
+        }
+    }
+
+    class Factory(private val wordDao: WordDao) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(GameViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return GameViewModel(wordDao) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }

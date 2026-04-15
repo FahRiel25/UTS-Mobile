@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     https://www.apache.org/licenses/LICENSE-2.0
+ * https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,15 +51,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
-import com.example.unscramble.ui.theme.UnscrambleTheme
 
 @Composable
-fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
+fun GameScreen(gameViewModel: GameViewModel) {
     val gameUiState by gameViewModel.uiState.collectAsState()
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
 
@@ -117,9 +114,16 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
                 )
             }
 
+            // Tombol Add Word yang disesuaikan dengan milik temanmu
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {  }
+                onClick = {
+                    // 1. Simpan kata dari teks yang sedang diketik
+                    gameViewModel.addWord(gameViewModel.userGuess)
+
+                    // 2. Kosongkan kembali kolom teksnya agar lebih rapi (Bonus UX!)
+                    gameViewModel.updateUserGuess("")
+                }
             ) {
                 Text(
                     text = stringResource(R.string.add),
@@ -258,12 +262,4 @@ private fun FinalScoreDialog(
             }
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GameScreenPreview() {
-    UnscrambleTheme {
-        GameScreen()
-    }
 }
