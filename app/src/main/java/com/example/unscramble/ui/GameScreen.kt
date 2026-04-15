@@ -116,6 +116,16 @@ fun GameScreen(gameViewModel: GameViewModel = viewModel()) {
                     fontSize = 16.sp
                 )
             }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {  }
+            ) {
+                Text(
+                    text = stringResource(R.string.add),
+                    fontSize = 16.sp
+                )
+            }
         }
 
         GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))

@@ -92,6 +92,10 @@ class GameViewModel : ViewModel() {
         updateUserGuess("")
     }
 
+    fun addWord() {
+
+    }
+
     /*
      * Picks a new currentWord and currentScrambledWord and updates UiState according to
      * current game state.
